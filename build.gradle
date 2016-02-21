@@ -1,0 +1,58 @@
+buildscript {
+  ext.sdc_api_version = '1.2.0.0'
+  ext.slf4j_version = '1.7.7'
+  ext.junit_version = '4.12'
+  repositories {
+    mavenCentral()
+  }
+}
+
+plugins {
+   id "nebula.provided-base" version "3.0.3"
+}
+
+apply plugin: 'java'
+apply plugin: 'distribution'
+apply plugin: 'maven'
+apply plugin: 'nebula.provided-base'
+
+group = 'com.adamkunicki'
+version = '1.0.0-SNAPSHOT'
+
+description = """StreamSets Data Collector stage library template for gradle."""
+
+sourceCompatibility = 1.7
+targetCompatibility = 1.7
+
+distributions {
+  main {
+    contents {
+      into('lib') {
+        from(jar)
+        from(project.configurations.runtime)
+      }
+      project.configurations.provided.dependencies.all { dep ->
+        exclude("**$dep.name*")
+      }
+      exclude("**/log4j*.jar")
+      exclude("**/metrics-core*.jar")
+      eachFile { details ->
+        if (details.name == jar.archiveName && !details.relativePath.toString().contains('/lib')) {
+          details.exclude()
+        }
+      }
+    }
+  }
+}
+
+repositories {
+  mavenCentral()
+}
+
+dependencies {
+  provided "com.streamsets:streamsets-datacollector-api:$sdc_api_version"
+  provided "org.slf4j:slf4j-api:$slf4j_version"
+  provided "org.slf4j:slf4j-log4j12:$slf4j_version"
+  testCompile "junit:junit:$junit_version"
+  testCompile "com.streamsets:streamsets-datacollector-sdk:$sdc_api_version"
+}
